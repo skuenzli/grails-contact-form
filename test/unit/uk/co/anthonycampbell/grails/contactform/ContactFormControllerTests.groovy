@@ -2,11 +2,10 @@ package uk.co.anthonycampbell.grails.contactform
 
 import grails.test.mixin.TestFor
 import grails.test.mixin.TestMixin
+import org.junit.Before
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import org.grails.plugin.jcaptcha.JcaptchaService
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import grails.plugin.mail.MailService
-import org.junit.Before
 
 /**
  * Set of unit tests for the contact form controller.
@@ -79,9 +78,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
@@ -110,9 +107,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert invalid config
-        mockedConfig.grails.mail.to = "invalid"
-        ConfigurationHolder.config = mockedConfig
+        configureInvalidMailTo()
 
         // Run test
         controller.send()
@@ -129,9 +124,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert empty test
-        mockedConfig.grails.mail.to = ""
-        ConfigurationHolder.config = mockedConfig
+        configureEmptyMailTo()
 
         // Run test
         controller.send()
@@ -148,9 +141,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert null config
-        mockedConfig.grails.mail.to = null
-        ConfigurationHolder.config = mockedConfig
+        configureNullMailTo()
 
         // Run test
         controller.send()
@@ -167,9 +158,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(emptyProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Insert parameters
         controller.params.putAll(emptyProperties)
@@ -188,9 +177,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
@@ -214,9 +201,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Insert parameters
         controller.params.putAll(validProperties)
@@ -235,9 +220,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
@@ -265,9 +248,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
@@ -296,9 +277,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert invalid config
-        mockedConfig.grails.mail.to = "invalid"
-        ConfigurationHolder.config = mockedConfig
+        configureInvalidMailTo()
 
         // Run test
         controller.ajaxSend()
@@ -315,9 +294,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert empty config
-        mockedConfig.grails.mail.to = ""
-        ConfigurationHolder.config = mockedConfig
+        configureEmptyMailTo()
 
         // Run test
         controller.ajaxSend()
@@ -334,9 +311,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert null config
-        mockedConfig.grails.mail.to = null
-        ConfigurationHolder.config = mockedConfig
+        configureNullMailTo()
 
         // Run test
         controller.ajaxSend()
@@ -353,9 +328,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(emptyProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Insert parameters
         controller.params.putAll(emptyProperties)
@@ -374,9 +347,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
@@ -400,9 +371,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Insert parameters
         controller.params.putAll(validProperties)
@@ -421,9 +390,7 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
@@ -486,4 +453,21 @@ class ContactFormControllerTests {
         assertEquals "Unexpected error message displayed!", errorCode,
                 controller.response.contentAsString
     }
+
+    def configureValidMailTo() {
+        controller.grailsApplication.config.mail.to = "test@contactform.com"
+    }
+
+    def configureInvalidMailTo() {
+        controller.grailsApplication.config.mail.to = "invalid"
+    }
+
+    def configureEmptyMailTo() {
+        controller.grailsApplication.config.mail.to = ""
+    }
+
+    def configureNullMailTo() {
+        controller.grailsApplication.config.mail.to = null
+    }
+
 }
