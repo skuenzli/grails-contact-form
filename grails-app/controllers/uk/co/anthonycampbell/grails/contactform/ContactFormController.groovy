@@ -23,7 +23,7 @@ class ContactFormController {
     def grailsApplication
     
     // Send actions only accept POST requests
-	static allowedMethods = [send:'POST', ajaxSend:'POST']
+	static allowedMethods = [send:'POST', ajaxSend:'POST', validate:'POST']
 
     /**
      * Re-direct index requests to create form
