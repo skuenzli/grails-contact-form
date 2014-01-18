@@ -3,7 +3,7 @@ package uk.co.anthonycampbell.grails.contactform
 import grails.test.*
 import org.grails.plugin.jcaptcha.JcaptchaService
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.grails.mail.MailService
+import grails.plugin.mail.MailService
 
 /**
  * Set of unit tests for the contact form controller.
