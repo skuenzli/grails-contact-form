@@ -15,27 +15,27 @@
  * limitations under the License.
  */
 
+grails.project.dependency.resolver = "maven" // or ivy
 grails.project.dependency.resolution = {
     inherits "global" // inherit Grails' default dependencies
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 
     repositories {
-        grailsPlugins()
-        grailsHome()
+        grailsCentral()
+        mavenLocal()
         mavenCentral()
 
         // Google's Maven repository
         mavenRepo "http://google-maven-repository.googlecode.com/svn/repository/"
     }
-
     dependencies {
         test 'org.mockito:mockito-all:1.8.5'
     }
 
     plugins {
-        runtime 'org.grails.plugins:mail:0.9'
-        runtime 'org.grails.plugins:jcaptcha:1.2.1'
-        runtime 'org.grails.plugins:jquery:1.4.2.5'
-        test 'org.grails.plugins:code-coverage:latest.integration'
+        runtime ':mail:1.0.1'
+        runtime ':jcaptcha:1.2.1'
+        runtime ':jquery:1.10.2'
+        test ':code-coverage:latest.integration'
     }
 }

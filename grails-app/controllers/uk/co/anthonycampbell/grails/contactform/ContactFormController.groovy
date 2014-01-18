@@ -3,7 +3,6 @@ package uk.co.anthonycampbell.grails.contactform
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.EmailValidator;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 /**
  * ContactForm controller
@@ -21,9 +20,10 @@ class ContactFormController {
     def jcaptchaService
     def messageSource
     def emailValidator = EmailValidator.getInstance()
+    def grailsApplication
     
     // Send actions only accept POST requests
-	static allowedMethods = [send:'POST', ajaxSend:'POST']
+	static allowedMethods = [send:'POST', ajaxSend:'POST', validate:'POST']
 
     /**
      * Re-direct index requests to create form
@@ -100,7 +100,7 @@ class ContactFormController {
     private doSend(boolean isAjax) {
         def parameters = params
         def contactFormInstance = new ContactForm(parameters)
-        def toEmailAddress = ConfigurationHolder.config.grails.mail.to
+        def toEmailAddress = grailsApplication.config.mail.to
         def validMessage = true
         def validCaptcha = true
         def view = "create"

@@ -25,11 +25,11 @@
  */
 class ContactFormGrailsPlugin {
     // the plugin version
-    def version = "1.0.8"
+    def version = "2.0"
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "1.2.0 > *"
+    def grailsVersion = "2.3 > *"
     // the other plugins this plugin depends on
-    def dependsOn = [ mail: "0.9", jcaptcha: "1.2.1", jquery: "1.4.2.5" ]
+    def dependsOn = [ mail: "1.0.1", jcaptcha: "1.2.1", jquery: "1.10.2" ]
     
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
@@ -37,7 +37,6 @@ class ContactFormGrailsPlugin {
             "grails-app/views/index.gsp"
     ]
 
-    // TODO Fill in these fields
     def author = "Anthony Campbell"
     def authorEmail = "acampbell3000 [[at] mail from google"
     def title = "Grails Contact Form"

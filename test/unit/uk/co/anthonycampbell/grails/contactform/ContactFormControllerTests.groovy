@@ -1,17 +1,21 @@
 package uk.co.anthonycampbell.grails.contactform
 
-import grails.test.*
+import grails.test.mixin.TestFor
+import grails.test.mixin.TestMixin
+import org.junit.Before
+import grails.test.mixin.domain.DomainClassUnitTestMixin
 import org.grails.plugin.jcaptcha.JcaptchaService
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.grails.mail.MailService
+import grails.plugin.mail.MailService
 
 /**
  * Set of unit tests for the contact form controller.
  */
-class ContactFormControllerTests extends ControllerUnitTestCase {
+@TestFor(ContactFormController)
+@TestMixin(DomainClassUnitTestMixin)
+class ContactFormControllerTests {
 
     // Declare test properties
-    ContactFormController contactFormController
+    ContactFormController controller
     def mockJcaptchaService
     def mockMailService
     def mockedConfig
@@ -22,20 +26,18 @@ class ContactFormControllerTests extends ControllerUnitTestCase {
     /**
      * Initialise test parameters and controller
      */
-    protected void setUp() {
-        super.setUp()
-
+    @Before
+    void setUp() {
         // Mock dependencies
-        mockLogging(ContactFormController.class, true)
         mockJcaptchaService = mockFor(JcaptchaService.class)
         mockMailService = mockFor(MailService.class)
 
         // Initialise controller
-        contactFormController = ContactFormController.newInstance()
+        controller = ContactFormController.newInstance()
         mockedConfig = ConfigObject.newInstance()
 
         // Add message lookup to always return key
-        contactFormController.metaClass.message = { Map args -> return args.code }
+        controller.metaClass.message = { Map args -> return args.code }
 
         // Initialise test form properties
         validProperties = [yourFullName: "Joe Bloggs",
@@ -48,13 +50,6 @@ class ContactFormControllerTests extends ControllerUnitTestCase {
             subject: "",
             message: "",
             captcha: ""]
-    }
-
-    /**
-     * Ensures a tear down is performed after each test
-     */
-    protected void tearDown() {
-        super.tearDown()
     }
 
     void testAllowedMethodsSize() {
@@ -72,377 +67,352 @@ class ContactFormControllerTests extends ControllerUnitTestCase {
 
     void testIndex() {
         // Run test
-        contactFormController.index()
+        controller.index()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "create",
-            contactFormController.redirectArgs.action
+        assertEquals "Unexpected redirect action returned!", "/contactForm/create",
+                response.redirectedUrl
     }
 
     void testSend() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
             def name, def sessionId, def response -> return true }
-        contactFormController.jcaptchaService = mockJcaptchaService.createMock()
+        controller.jcaptchaService = mockJcaptchaService.createMock()
 
         // Mock Mail service
         mockMailService.demand.sendMail() { def closure -> return null }
-        contactFormController.mailService = mockMailService.createMock()
+        controller.mailService = mockMailService.createMock()
 
         // Insert parameters
-        contactFormController.params.putAll(validProperties)
+        controller.params.putAll(validProperties)
 
         // Run test
-        contactFormController.send()
+        controller.send()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "create",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.success",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testSendWithInvalidDestinationEmail() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert invalid config
-        mockedConfig.grails.mail.to = "invalid"
-        ConfigurationHolder.config = mockedConfig
+        configureInvalidMailTo()
 
         // Run test
-        contactFormController.send()
+        controller.send()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "create",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.destination.address.not.found.message",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testSendWithEmptyDestinationEmail() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert empty test
-        mockedConfig.grails.mail.to = ""
-        ConfigurationHolder.config = mockedConfig
+        configureEmptyMailTo()
 
         // Run test
-        contactFormController.send()
+        controller.send()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "create",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.destination.address.not.found.message",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testSendWithNullDestinationEmail() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert null config
-        mockedConfig.grails.mail.to = null
-        ConfigurationHolder.config = mockedConfig
+        configureNullMailTo()
 
         // Run test
-        contactFormController.send()
+        controller.send()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "create",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.destination.address.not.found.message",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testSendWithInvalidForm() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(emptyProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Insert parameters
-        contactFormController.params.putAll(emptyProperties)
+        controller.params.putAll(emptyProperties)
 
         // Run test
-        contactFormController.send()
+        controller.send()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "create",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!", null,
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testSendWithInvalidCaptcha() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
             def name, def sessionId, def response -> return false }
-        contactFormController.jcaptchaService = mockJcaptchaService.createMock()
+        controller.jcaptchaService = mockJcaptchaService.createMock()
 
         // Insert parameters
-        contactFormController.params.putAll(validProperties)
+        controller.params.putAll(validProperties)
 
         // Run test
-        contactFormController.send()
+        controller.send()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "create",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!", null,
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testSendWithCaptchaFailure() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Insert parameters
-        contactFormController.params.putAll(validProperties)
+        controller.params.putAll(validProperties)
 
         // Run test
-        contactFormController.send()
+        controller.send()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "create",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!", null,
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testSendWithMailServiceFailure() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
             def name, def sessionId, def response -> return true }
-        contactFormController.jcaptchaService = mockJcaptchaService.createMock()
+        controller.jcaptchaService = mockJcaptchaService.createMock()
+
+        mockMailService.demand.sendMail() { def closure -> throw new RuntimeException("sendMail failed, as expected") }
+        controller.mailService = mockMailService.createMock()
 
         // Insert parameters
-        contactFormController.params.putAll(validProperties)
+        controller.params.putAll(validProperties)
 
         // Run test
-        contactFormController.send()
+        controller.send()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "create",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.send.fail",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testAjaxSend() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
             def name, def sessionId, def response -> return true }
-        contactFormController.jcaptchaService = mockJcaptchaService.createMock()
+        controller.jcaptchaService = mockJcaptchaService.createMock()
 
         // Mock Mail service
         mockMailService.demand.sendMail() { def closure -> return null }
-        contactFormController.mailService = mockMailService.createMock()
+        controller.mailService = mockMailService.createMock()
 
         // Insert parameters
-        contactFormController.params.putAll(validProperties)
+        controller.params.putAll(validProperties)
 
         // Run test
-        contactFormController.ajaxSend()
+        controller.ajaxSend()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "ajaxCreate",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/_create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.success",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testAjaxSendWithInvalidDestinationEmail() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert invalid config
-        mockedConfig.grails.mail.to = "invalid"
-        ConfigurationHolder.config = mockedConfig
+        configureInvalidMailTo()
 
         // Run test
-        contactFormController.ajaxSend()
+        controller.ajaxSend()
 
         // Check results
-        assertEquals "Unexpected redirect action returned!", "ajaxCreate",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/_create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.destination.address.not.found.message",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testAjaxSendWithEmptyDestinationEmail() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert empty config
-        mockedConfig.grails.mail.to = ""
-        ConfigurationHolder.config = mockedConfig
+        configureEmptyMailTo()
 
         // Run test
-        contactFormController.ajaxSend()
+        controller.ajaxSend()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "ajaxCreate",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/_create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.destination.address.not.found.message",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testAjaxSendWithNullDestinationEmail() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert null config
-        mockedConfig.grails.mail.to = null
-        ConfigurationHolder.config = mockedConfig
+        configureNullMailTo()
 
         // Run test
-        contactFormController.ajaxSend()
+        controller.ajaxSend()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "ajaxCreate",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/_create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.destination.address.not.found.message",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testAjaxSendWithInvalidForm() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(emptyProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Insert parameters
-        contactFormController.params.putAll(emptyProperties)
+        controller.params.putAll(emptyProperties)
 
         // Run test
-        contactFormController.ajaxSend()
+        controller.ajaxSend()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "ajaxCreate",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/_create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!", null,
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testAjaxSendWithInvalidCaptcha() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
             def name, def sessionId, def response -> return false }
-        contactFormController.jcaptchaService = mockJcaptchaService.createMock()
+        controller.jcaptchaService = mockJcaptchaService.createMock()
 
         // Insert parameters
-        contactFormController.params.putAll(validProperties)
+        controller.params.putAll(validProperties)
 
         // Run test
-        contactFormController.ajaxSend()
+        controller.ajaxSend()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "ajaxCreate",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/_create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!", null,
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testAjaxSendWithCaptchaFailure() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Insert parameters
-        contactFormController.params.putAll(validProperties)
+        controller.params.putAll(validProperties)
 
         // Run test
-        contactFormController.ajaxSend()
+        controller.ajaxSend()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "ajaxCreate",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/_create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!", null,
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testAjaxSendWithMailServiceFailure() {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
-        // Insert config
-        mockedConfig.grails.mail.to = "test@contactform.com"
-        ConfigurationHolder.config = mockedConfig
+        configureValidMailTo()
 
         // Mock JCaptcha service
         mockJcaptchaService.demand.validateResponse() {
             def name, def sessionId, def response -> return true }
-        contactFormController.jcaptchaService = mockJcaptchaService.createMock()
+        controller.jcaptchaService = mockJcaptchaService.createMock()
+
+        // Mock MailService
+        mockMailService.demand.sendMail() { def closure -> throw new RuntimeException("sendMail failed, as expected") }
+        controller.mailService = mockMailService.createMock()
 
         // Insert parameters
-        contactFormController.params.putAll(validProperties)
+        controller.params.putAll(validProperties)
 
         // Run test
-        contactFormController.ajaxSend()
+        controller.ajaxSend()
 
         // Check result
-        assertEquals "Unexpected redirect action returned!", "ajaxCreate",
-            contactFormController.modelAndView.viewName
+        assertEquals "Unexpected redirect action returned!", "/contactForm/_create",
+            controller.modelAndView.viewName
         assertEquals "Unexpected flash message displayed!",
             "uk.co.anthonycampbell.grails.contactform.ContactForm.send.fail",
-            contactFormController.flash.message
+            controller.flash.message
     }
 
     void testValidate() {
@@ -450,14 +420,14 @@ class ContactFormControllerTests extends ControllerUnitTestCase {
         mockDomain(ContactForm, [new ContactForm(validProperties)])
 
         // Insert parameters
-        contactFormController.params.putAll(validProperties)
+        controller.params.putAll(validProperties)
 
         // Run test
-        contactFormController.validate()
+        controller.validate()
 
         // Check result
         assertEquals "Unexpected error message displayed!", "",
-            contactFormController.response.contentAsString
+            controller.response.contentAsString
     }
 
     void testValidateWithEmptyField() {
@@ -470,17 +440,34 @@ class ContactFormControllerTests extends ControllerUnitTestCase {
         mockDomain(ContactForm, [new ContactForm(emptyField)])
 
         // Insert paerror.coderameters
-        contactFormController.params.putAll(emptyField)
+        controller.params.putAll(emptyField)
         
         // Mock message source
-        contactFormController.messageSource =
+        controller.messageSource =
             [getMessage: { def fieldError, def locale -> return errorCode }]
 
         // Run test
-        contactFormController.validate()
+        controller.validate()
 
         // Check result
         assertEquals "Unexpected error message displayed!", errorCode,
-                contactFormController.response.contentAsString
+                controller.response.contentAsString
     }
+
+    def configureValidMailTo() {
+        controller.grailsApplication.config.mail.to = "test@contactform.com"
+    }
+
+    def configureInvalidMailTo() {
+        controller.grailsApplication.config.mail.to = "invalid"
+    }
+
+    def configureEmptyMailTo() {
+        controller.grailsApplication.config.mail.to = ""
+    }
+
+    def configureNullMailTo() {
+        controller.grailsApplication.config.mail.to = null
+    }
+
 }
