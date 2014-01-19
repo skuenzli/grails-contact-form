@@ -54,7 +54,7 @@ class ContactFormControllerTests {
 
     void testAllowedMethodsSize() {
         assertEquals "Unexpected number of allowed methods available on the ContactFormController",
-            2, ContactFormController.allowedMethods.size()
+            3, ContactFormController.allowedMethods.size()
     }
 
     void testAllowedMethodsKeys() {
