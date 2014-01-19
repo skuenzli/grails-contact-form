@@ -170,6 +170,7 @@ class TextTagLib {
 		def readonly = attrs.remove('readonly')
 		def cols = attrs.remove('cols')
 		def rows = attrs.remove('rows')
+        def cssClass = attrs.remove('class')
 
 		// Validate attributes
 		if(!value) value = ''
@@ -189,7 +190,14 @@ class TextTagLib {
 			readonly = 'readonly=\"readonly\" '
 		}
 
-		out << "<textarea id=\"${attrs.remove('id')}\" name=\"${attrs.remove('name')}\" ${cols}${rows}${readonly}onkeyup=\""
+        if (!cssClass) {
+            cssClass = ''
+        } else {
+            cssClass = 'class=\"' + cssClass + '\" '
+        }
+
+
+        out << "<textarea id=\"${attrs.remove('id')}\" name=\"${attrs.remove('name')}\" ${cols}${rows}${readonly}${cssClass} onkeyup=\""
 
 		if (attrs.params) {
 			if (attrs.params instanceof Map) {
