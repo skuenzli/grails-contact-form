@@ -426,12 +426,13 @@ class ContactFormControllerTests {
         controller.validate()
 
         // Check result
+        assertEquals 200, controller.response.status
         assertEquals "Unexpected error message displayed!", "",
             controller.response.contentAsString
     }
 
     void testValidateWithEmptyField() {
-        def errorCode = "error.code"
+        def errorMessage = "an error message managed via the standard grails message source"
 
         // Declare field to validate
         def emptyField = [yourFullName: ""]
@@ -439,18 +440,18 @@ class ContactFormControllerTests {
         // Mock contact form
         mockDomain(ContactForm, [new ContactForm(emptyField)])
 
-        // Insert paerror.coderameters
         controller.params.putAll(emptyField)
         
         // Mock message source
         controller.messageSource =
-            [getMessage: { def fieldError, def locale -> return errorCode }]
+            [getMessage: { def fieldError, def locale -> return errorMessage }]
 
         // Run test
         controller.validate()
 
         // Check result
-        assertEquals "Unexpected error message displayed!", errorCode,
+        assertEquals "the field was not valid, but the validate request should still succeed", 200, controller.response.status
+        assertEquals "Unexpected error message displayed!", errorMessage,
                 controller.response.contentAsString
     }
 

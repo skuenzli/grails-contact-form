@@ -67,7 +67,7 @@ class ContactFormController {
             )
 
             log.debug("Error message: " + errorMessage)
-            render status:400, text: errorMessage
+            render status:200, text: errorMessage
         } else {
             render status:200
         }
