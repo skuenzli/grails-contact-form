@@ -47,7 +47,6 @@ class ContactFormController {
     def validate = {
         // Initialise domain instance and error message
         def contactFormInstance = new ContactForm(params)
-        def errorMessage = ""
         def field = ""
 
         // Get selected field
@@ -59,21 +58,19 @@ class ContactFormController {
             }
         }
 
-		log.debug("Validating field: " + field)
-
         // Check whether provided field has errors
         if (!contactFormInstance.validate() && contactFormInstance.errors.hasFieldErrors(field)) {
             // Get error message value
-            errorMessage = messageSource.getMessage(
+            def errorMessage = messageSource.getMessage(
                 contactFormInstance.errors.getFieldError(field),
                 RCU.getLocale(request)
             )
 
             log.debug("Error message: " + errorMessage)
+            render status:400, text: errorMessage
+        } else {
+            render status:200
         }
-
-        // Render error message
-        render(errorMessage)
     }
 
     /**
