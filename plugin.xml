@@ -1,4 +1,4 @@
-<plugin name='contact-form' version='2.0' grailsVersion='2.3 &gt; *'>
+<plugin name='contact-form' version='2.0' grailsVersion='2.3.2 &gt; *'>
   <author>Anthony Campbell</author>
   <authorEmail>acampbell3000 [[at] mail from google</authorEmail>
   <title>Grails Contact Form</title>
@@ -8,18 +8,10 @@ A simple plug-in which provides an Ajax driven contact form with real time valid
 Ajax forms provided by the "remote-forms" skin available through the skin-loader plug-in.
 </description>
   <documentation>http://grails.org/plugin/contact-form</documentation>
+  <type>ContactFormGrailsPlugin</type>
   <resources>
-    <resource>BuildConfig</resource>
-    <resource>Config</resource>
-    <resource>UrlMappings</resource>
     <resource>uk.co.anthonycampbell.grails.contactform.ContactFormController</resource>
     <resource>uk.co.anthonycampbell.grails.contactform.ContactForm</resource>
     <resource>uk.co.anthonycampbell.grails.taglib.TextTagLib</resource>
   </resources>
-  <dependencies>
-    <plugin name='mail' version='1.0.1' />
-    <plugin name='jcaptcha' version='1.2.1' />
-    <plugin name='jquery' version='1.10.2' />
-  </dependencies>
-  <behavior />
 </plugin>
