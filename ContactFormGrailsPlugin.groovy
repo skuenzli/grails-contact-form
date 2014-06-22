@@ -29,7 +29,7 @@ class ContactFormGrailsPlugin {
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.3 > *"
     // the other plugins this plugin depends on
-    def dependsOn = [ mail: "1.0.1", jcaptcha: "1.2.1", jquery: "1.10.2" ]
+    def dependsOn = [ mail: "1.0.1", jcaptcha: "1.2.1", jquery: "1.11.1" ]
     
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
